@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+resource "random_string" "project_suffix" {
+  length  = 4
+  upper   = false
+  number  = false
+  special = false
+}
 
 module "forseti-enforcer-project" {
   source  = "terraform-google-modules/project-factory/google"
@@ -43,7 +49,7 @@ module "forseti-host-project" {
   org_id          = var.org_id
   folder_id       = var.folder_id
   billing_account = var.billing_account
-  project_id      = "ci-forseti-host-project-${var.project_suffix}"
+  project_id      = "ci-forseti-host-project-${random_string.project_suffix.result}"
 
   activate_apis = [
     "compute.googleapis.com",
@@ -67,7 +73,7 @@ module "forseti-service-project" {
   folder_id       = var.folder_id
   billing_account = var.billing_account
   name            = "ci-forseti-serv"
-  project_id      = "ci-forseti-serv-${var.project_suffix}"
+  project_id      = "ci-forseti-serv-${random_string.project_suffix.result}"
 
   activate_apis = [
     "compute.googleapis.com",
@@ -86,12 +92,12 @@ module "forseti-service-project" {
 }
 
 // Define a shared VPC network within the Forseti host project.
-module "forseti-host-network-01" {
+module "forseti-host-network" {
   source  = "terraform-google-modules/network/google"
   version = "1.1.0"
 
   project_id   = module.forseti-host-project.project_id
-  network_name = "forseti-network"
+  network_name = "forseti-host-net-${random_string.project_suffix.result}"
 
   shared_vpc_host = true
 
@@ -101,7 +107,7 @@ module "forseti-host-network-01" {
 
   subnets = [
     {
-      subnet_name   = "forseti-subnetwork"
+      subnet_name   = "forseti-host-subnet-${random_string.project_suffix.result}"
       subnet_ip     = "10.128.0.0/20"
       subnet_region = "us-central1"
     },
@@ -110,7 +116,7 @@ module "forseti-host-network-01" {
 
 resource "google_compute_router" "forseti_host" {
   name    = "forseti-host"
-  network = module.forseti-host-network-01.network_self_link
+  network = module.forseti-host-network.network_self_link
 
   bgp {
     asn = "64514"
@@ -127,7 +133,7 @@ resource "google_compute_router_nat" "forseti_host" {
   source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
 
   subnetwork {
-    name                    = module.forseti-host-network-01.subnets_self_links[0]
+    name                    = module.forseti-host-network.subnets_self_links[0]
     source_ip_ranges_to_nat = ["ALL_IP_RANGES"]
   }
 
@@ -139,7 +145,7 @@ module "forseti-service-network" {
   source  = "terraform-google-modules/network/google"
   version = "1.1.0"
 
-  network_name = "forseti-network"
+  network_name = "forseti-service-net-${random_string.project_suffix.result}"
   project_id   = module.forseti-service-project.project_id
 
   secondary_ranges = {
@@ -148,7 +154,7 @@ module "forseti-service-network" {
 
   subnets = [
     {
-      subnet_name   = "forseti-subnetwork"
+      subnet_name   = "forseti-service-subnet-${random_string.project_suffix.result}"
       subnet_ip     = "10.129.0.0/20"
       subnet_region = "us-central1"
     },

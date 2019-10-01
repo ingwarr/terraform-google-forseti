@@ -74,7 +74,7 @@ locals {
 
 resource "google_service_account" "int_test" {
   project      = module.forseti-host-project.project_id
-  account_id   = "ci-forseti"
+  account_id   = "ci-forseti-${random_string.project_suffix.result}"
   display_name = "ci-forseti"
 }
 
@@ -112,7 +112,8 @@ resource "google_project_iam_member" "forseti" {
 resource "google_project_iam_member" "forseti-enforcer" {
   count = length(local.forseti_enforcer_project_required_roles)
 
-  project = module.forseti-enforcer-project.project_id
+#  project = module.forseti-enforcer-project.project_id
+  project = module.forseti-host-project.project_id
   role    = local.forseti_enforcer_project_required_roles[count.index]
   member  = "serviceAccount:${google_service_account.int_test.email}"
 }

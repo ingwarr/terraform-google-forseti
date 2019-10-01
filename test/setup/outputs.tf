@@ -30,12 +30,20 @@ output "enforcer_project_id" {
   value = module.forseti-enforcer-project.project_id
 }
 
-output "network" {
-  value = module.forseti-host-network-01.network_name
+output "host_network" {
+  value = module.forseti-host-network.network_name
 }
 
-output "subnetwork" {
-  value = module.forseti-host-network-01.subnets_names[0]
+output "host_subnetwork" {
+  value = module.forseti-host-network.subnets_names[0]
+}
+
+output "service_network" {
+  value = module.forseti-service-network.network_name
+}
+
+output "service_subnetwork" {
+  value = module.forseti-service-network.subnets_names[0]
 }
 
 output "sa_key" {

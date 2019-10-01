@@ -22,11 +22,13 @@ echo "export TF_VAR_pubsub_project_id='$project_id'" >> ../source.sh
 network_project=$(terraform output network_project)
 echo "export TF_VAR_network_project='$network_project'" >> ../source.sh
 enforcer_project_id=$(terraform output enforcer_project_id)
-echo "export TF_VAR_enforcer_project_id='$enforcer_project_id'" >> ../source.sh
+
+echo "export TF_VAR_enforcer_project_id='$network_project'" >> ../source.sh
+
 echo "export TF_VAR_sink_project_id='$enforcer_project_id'" >> ../source.sh
-network=$(terraform output network)
+network=$(terraform output host_network)
 echo "export TF_VAR_network='$network'" >> ../source.sh
-subnetwork=$(terraform output subnetwork)
+subnetwork=$(terraform output host_subnetwork)
 echo "export TF_VAR_subnetwork='$subnetwork'" >> ../source.sh
 domain="dev.infra.cft.tips"
 echo "export TF_VAR_domain='$domain'" >> ../source.sh
